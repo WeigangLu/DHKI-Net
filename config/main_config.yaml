@@ -1,0 +1,208 @@
+experiment:
+  model_type: 'proposed'
+  
+  run_timestamp: null
+
+# ------------------------------------------------------------------------------
+# Data Paths and Caching Control
+# ------------------------------------------------------------------------------
+data:
+  raw_order_path: './data/raw/orders.csv'
+  raw_gps_path: './data/raw/gps.csv'
+  processed_output_dir: './data/processed/'
+  weather_data_path: './data/raw/weather.csv'
+  zone_static_features_path: './data/raw/zone_info.xlsx'
+  use_intermediate_files: true
+  intermediate_dir: './data/processed/intermediate/'
+
+  # --- Cache Control ---
+  # These settings help create unique cache files for different data processing settings.
+  # It is safe to leave them as is.
+  caching_params:
+    gridding: ['spatio_temporal.gridding.method', 'spatio_temporal.gridding.uniform.grid_size_meters']
+    features: [
+      'features.historical_look_back_steps',
+      'features.prediction_horizon_steps',
+      'features.enable_time_features',
+      'features.enable_lagged_features',
+      'features.enable_rolling_window_features',
+      'features.enable_weather_features',
+      'features.enable_static_zone_features',
+    ]
+
+  cleaned_order_filename: 'orders_cleaned.pkl'
+  cleaned_gps_filename: 'gps_cleaned.pkl'
+  gps_with_status_filename: 'gps_with_status.pkl'
+  sample_fraction: 1.0 # Use 1.0 for full dataset, reduce for quick tests (e.g., 0.1)
+  num_contrastive_negatives: 128
+  log_transform_epsilon: 1e-6
+
+# ------------------------------------------------------------------------------
+# Data Filtering and Splitting
+# ------------------------------------------------------------------------------
+data_filtering:
+  min_orders_per_vehicle: 10
+  
+  time_split:
+    train:
+      start: '2025-02-04 00:00:00'
+      end: '2025-02-20 23:59:59'
+    validation:
+      start: '2025-02-21 00:00:00'
+      end: '2025-02-23 23:59:59'
+    test:
+      start: '2025-02-24 00:00:00'
+      end: '2025-02-26 23:59:59'
+
+  time_window_filter:
+    enable: false
+    start_hour: 8
+    end_hour: 20
+    
+results:
+  checkpoints_dir: './results/checkpoints'
+
+# ------------------------------------------------------------------------------
+# Spatio-Temporal Parameters
+# ------------------------------------------------------------------------------
+spatio_temporal:
+  city_bounding_box: [113.83, 22.15, 114.5, 22.56]
+  
+  gridding:
+    method: 'geojson' 
+    geojson:
+      file_path: './data/raw/zones.geojson'
+      zone_id_property: 'ca_eng'
+
+  time_interval_minutes: 30
+
+# ------------------------------------------------------------------------------
+# Feature Engineering Parameters
+# ------------------------------------------------------------------------------
+features:
+  historical_look_back_steps: 24
+  prediction_horizon_steps: 1
+
+  enable_time_features: true
+  enable_lagged_features: true
+  enable_rolling_window_features: true
+  enable_weather_features: true
+  enable_static_zone_features: true
+
+  holidays_list: 
+    - '2025-01-01'
+    - '2025-01-29'
+    - '2025-01-30'
+    - '2025-01-31'
+    - '2025-04-04'
+    - '2025-04-18'
+    - '2025-04-19'
+    - '2025-04-21'
+    - '2025-05-01'
+    - '2025-05-05'
+    - '2025-06-01'
+    - '2025-07-01'
+    - '2025-09-30'
+    - '2025-10-01'
+    - '2025-10-10'
+    - '2025-12-25'
+    - '2025-12-26'
+
+  lag_features_to_create:
+    demand: {daily: true, weekly: true}
+    supply: {daily: true, weekly: true}
+  
+  rolling_window_hours: [1, 3, 6, 12, 24]
+  rolling_window_target_cols: ['demand', 'supply']
+  rolling_window_stats: ['mean', 'median', 'std', 'min', 'max']
+
+  weather_location_col_is_zone_id: true
+  weather_feature_cols:
+    - 'temperature_2m'
+    - 'relative_humidity_2m'
+    - 'precipitation'
+    - 'pressure_msl'
+    - 'wind_speed_10m'
+
+  static_zone_id_col: 'ca_eng'
+  static_zone_feature_cols:
+    - 't_pop'
+    - 't_wp'
+    - 'ma_hh'
+    - 't_mmearn'
+    - 'dh'
+    - 'dm_r'
+    - 'dhm_loan'
+    - 'fa_m'
+    - 'plw_same'
+    - 'plw_diff_h'
+    - 'plw_diff_k'
+    - 'plw_diff_n'
+    - 't_ma'
+    - 'sr'
+
+  scaling_method: 'standard'
+  do_not_scale_cols:
+    - 'demand'
+    - 'total_income'
+    - 'is_weekend'
+    - 'is_holiday'
+    - 'hour_sin'
+    - 'hour_cos'
+    - 'dayofweek_sin'
+    - 'dayofweek_cos'
+    - 'month_sin'
+    - 'month_cos'
+
+# ------------------------------------------------------------------------------
+# Model Hyperparameters
+# ------------------------------------------------------------------------------
+model:
+  architecture_type: 'three_target'
+  use_gnn: true
+  embedding_dim: 128 # d_model for the transformer
+  d_learnable: 32   # Dimension for the learnable zone embedding
+  d_pos: 32         # Dimension for the 2D positional encoding (must be even)
+  
+  num_distance_buckets: 10 # Number of buckets for discretizing Haversine distances
+  gnn_type: 'GCN'
+  num_gnn_layers: 1
+  num_transformer_layers: 4
+  num_heads: 4
+  dropout_rate: 0.2
+
+# ------------------------------------------------------------------------------
+# Training Parameters
+# ------------------------------------------------------------------------------
+training:
+  device: 'cuda' # Use 'cuda' for GPU on server, 'cpu' for local development
+  epochs: 500
+  batch_size: 32
+  learning_rate: 0.0001
+  weight_decay: 0.000001
+  optimizer_type: 'Adam'
+  early_stopping_patience: 15
+  clip_grad_norm: 1.0
+  checkpoint_path: './results/checkpoints/' # Path to save model checkpoints
+  # Loss weights
+  bce_loss_weight: 1.0
+  count_loss_weight: 1.0
+  income_loss_weight: 1.5
+  contrastive_loss_weight: 1.0
+  contrastive_temperature: 0.1
+
+# ------------------------------------------------------------------------------
+# System & Logging
+# ------------------------------------------------------------------------------
+system:
+  random_seed: 42
+  num_workers: 8 # Adjust based on server CPU cores
+  tag_suffix: "_server_run"
+
+logging:
+  level: INFO
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  datefmt: '%Y-%m-%d %H:%M:%S'
+  log_dir: './results/logs/'
+  plot_dir: './results/plots/'
+  predictions_dir: './results/predictions/'
