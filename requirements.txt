@@ -68,7 +68,6 @@ h2 @ file:///home/conda/feedstock_root/build_artifacts/h2_1738578511449/work
 h5py @ file:///Users/runner/miniforge3/conda-bld/h5py_1739952773131/work
 haversine==2.9.0
 # Editable install with no version control (hktsf-core==0.1.0)
--e /Users/luweigang/Desktop/local/code/HKTaxiSim
 hpack @ file:///home/conda/feedstock_root/build_artifacts/hpack_1737618293087/work
 httpcore==1.0.9
 httpx==0.28.1
@@ -209,7 +208,6 @@ sumolib==1.22.0
 symfc @ file:///home/conda/feedstock_root/build_artifacts/symfc_1740473530771/work
 sympy @ file:///home/conda/feedstock_root/build_artifacts/sympy_1745946051654/work
 tabulate @ file:///home/conda/feedstock_root/build_artifacts/tabulate_1733589744265/work
--e git+https://github.com/WeigangLu/HKTSF.git@8c8414e6aea872c188c924cea6f654bc0714f66f#egg=taxi_dispatch
 tenacity==9.1.2
 terminado==0.18.1
 threadpoolctl==3.6.0
@@ -219,11 +217,10 @@ tomli==2.2.1
 tomlkit==0.13.2
 torch==2.7.1
 torch-geometric==2.6.1
-torch_cluster @ file:///Users/luweigang/Desktop/%E6%9C%AC%E5%9C%B0/%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6/whl/torch_cluster-1.6.3-cp310-cp310-macosx_10_9_universal2.whl#sha256=abb169589d9ac8549fae09fc5b227f5a1018056996994d056bd89720fed7af13
-torch_scatter @ file:///Users/luweigang/Desktop/%E6%9C%AC%E5%9C%B0/%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6/whl/torch_scatter-2.1.2-cp310-cp310-macosx_10_9_universal2.whl#sha256=577c1c1b81f70099525258ed613009299657e9b8706611511e8ecfb12f26cda0
-torch_sparse @ file:///Users/luweigang/Desktop/%E6%9C%AC%E5%9C%B0/%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6/whl/torch_sparse-0.6.18-cp310-cp310-macosx_11_0_universal2.whl#sha256=31e88902f418e05fbdfb0c4a4950254d67b53d128f56bce855e0ccb7598d202b
-torch_spline_conv @ file:///Users/luweigang/Desktop/%E6%9C%AC%E5%9C%B0/%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6/whl/torch_spline_conv-1.2.2-cp310-cp310-macosx_10_9_universal2.whl#sha256=6be0c7998f6485e634db9767c2639439f9ac3fc0e1121a01f49d1ccb1c526a15
-torchvision==0.22.1
+torch_cluster
+torch_scatter 
+torch_sparse
+torch_spline_conv
 tornado @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_0axef5a0m0/croot/tornado_1733960501260/work
 tqdm==4.67.1
 traci==1.22.0
